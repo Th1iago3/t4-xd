@@ -29,7 +29,7 @@ function handleRouting() {
             handleDRoute(key, fullChave);
             break;
         default:
-            document.getElementById('output').innerHTML = "❌ | Rota inválida!";
+            document.getElementById('output').innerHTML = "❌ | Rota!";
             break;
     }
 }
