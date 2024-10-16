@@ -29,6 +29,11 @@ app.get('/a/:key', (req, res) => {
     res.send(`✅ | CHAVE GERADA COM SUCESSO!! ${generatedKey}`);
 });
 
+// Rota para deletar chaves (informa sobre a operação)
+app.get('/d', (req, res) => {
+    res.send('Use DELETE para remover chaves: /d/{key}/{chave} para uma chave específica ou /d/all/{key} para todas as chaves.');
+});
+
 // Rota para listar chaves
 app.get('/v/:key', (req, res) => {
     const key = req.params.key;
