@@ -1,77 +1,81 @@
 const AUTH_KEY = "rquA9WPlnVk1f5IcSqe3oZprepkoooEdLeFbiYfowzbvg3kZ9NR6MMzFIskfbb8s";
 
-// Simulação de roteamento baseado no hash da URL
-window.onload = function () {
-    handleRouting();  // Chama a função de roteamento ao carregar a página
-    window.onhashchange = handleRouting;  // Atualiza quando o hash muda
-};
+// Função para carregar chaves do JSON
+async function loadKeys() {
+    const response = await fetch('keys.json');
+    return response.json();
+}
 
-// Função que interpreta o hash e redireciona para a "rota" correta
+// Função para salvar chaves no JSON
+async function saveKey(key) {
+    let keys = await loadKeys();
+    keys.push(key);
+    const updatedKeys = JSON.stringify(keys, null, 2);
+
+    // Simula a escrita no arquivo JSON (em um ambiente real, isso precisa de um backend)
+    console.log("Chaves Atualizadas:", updatedKeys);
+}
+
+// Simulação de roteamento baseado na entrada do usuário
 function handleRouting() {
-    const hash = window.location.hash;  // Exemplo: #/a/{chave}
-    const parts = hash.slice(2).split('/');  // Remove o '#/' e divide as partes
-    const route = parts[0];
-    const chave = parts[1];
-    const key = parts[1];
-    const fullChave = parts[2];
+    const chave = document.getElementById('keyInput').value.trim();
+    const route = chave.split('/')[0]; // Exemplo: "a"
+    const key = chave.split('/')[1]; // Exemplo: "chave"
 
     switch (route) {
         case 'a':
-            handleARoute(chave);
+            handleARoute(key);
             break;
         case 'v':
-            handleVRoute(chave);
-            break;
-        case 'tm':
-            handleTMRoute(chave);
-            break;
-        case 'd':
-            handleDRoute(key, fullChave);
+            handleVRoute(key);
             break;
         default:
-            document.getElementById('output').innerHTML = "❌ | Invalid Method[1]";
+            document.getElementById('output').innerHTML = "❌ | Método inválido.";
             break;
     }
 }
 
 // Rota /a/{chave} - Gera chave criptografada e salva
-function handleARoute(chave) {
+async function handleARoute(chave) {
     if (chave !== AUTH_KEY) {
-        document.getElementById('output').innerHTML = "❌ | Invalid KeyChain[1]";
+        document.getElementById('output').innerHTML = "❌ | Chave inválida.";
         return;
     }
 
     const key = generateKey();
     const timestamp = new Date().toLocaleString();
 
-    // Simula a criação de um arquivo via LocalStorage
-    localStorage.setItem(key, '');
+    // Salva a chave no JSON
+    await saveKey(key);
 
-    document.getElementById('output').innerHTML = `✅ | CHAVE GERADA COM SUCESSO!! ${key} <${timestamp}>`;
+    document.getElementById('output').innerHTML = `✅ | Chave gerada com sucesso: ${key} <${timestamp}>`;
 }
 
 // Rota /v/{chave} - Lista chaves geradas
-function handleVRoute(chave) {
+async function handleVRoute(chave) {
     if (chave !== AUTH_KEY) {
-        document.getElementById('output').innerHTML = "❌ | Invalid KeyChain[1]";
+        document.getElementById('output').innerHTML = "❌ | Chave inválida.";
         return;
     }
 
-    const keys = Object.keys(localStorage).filter(key => localStorage.getItem(key) === '');
+    const keys = await loadKeys();
 
     if (keys.length === 0) {
         document.getElementById('output').innerHTML = "Nenhuma chave encontrada.";
     } else {
-        document.getElementById('output').innerHTML = keys.join('<br>');  // Enfileira as chaves
+        document.getElementById('output').innerHTML = keys.join('<br>');  // Exibe as chaves
     }
 }
 
-// Rota /tm/{chave} - Gera chaves em .txt e lista chaves
-function handleTMRoute(chave) {
-    if (chave !== AUTH_KEY) {
-        document.getElementById('output').innerHTML = "❌ | Invalid KeyChain[1]";
-        return;
+// Função para gerar uma chave aleatória
+function generateKey() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let key = '';
+    for (let i = 0; i < 64; i++) {  // Gera uma chave de 64 caracteres
+        key += characters.charAt(Math.floor(Math.random() * characters.length));
     }
+    return key;
+}
 
     const key = generateKey();
     localStorage.setItem(`${key}.txt`, key);  // Simula arquivo .txt
