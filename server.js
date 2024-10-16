@@ -14,7 +14,7 @@ const keysFilePath = path.join(__dirname, 'keys.json');
 
 // Rota para a raiz
 app.get('/', (req, res) => {
-    res.send('Cannot Get /');
+    res.send('Bem-vindo ao Gerador de Chaves! Use as rotas para gerar e gerenciar chaves.');
 });
 
 // Rota para gerar uma chave
@@ -39,6 +39,25 @@ app.get('/v/:key', (req, res) => {
     const keys = getKeys(); // Recupera as chaves do JSON
     const keysList = keys.join('\n'); // Formata as chaves como lista
     res.send(keysList); // Retorna as chaves como texto simples
+});
+
+// Rota para deletar uma chave específica
+app.delete('/d/:key/:chave', (req, res) => {
+    const key = req.params.key;
+    const chave = req.params.chave;
+    if (key !== 'rquA9WPlnVk1f5IcSqe3oZprepkoooEdLeFbiYfowzbvg3kZ9NR6MMzFIskfbb8s') {
+        return res.status(403).send('Chave inválida.');
+    }
+
+    const keys = getKeys(); // Recupera as chaves do JSON
+    const filteredKeys = keys.filter(existingKey => existingKey !== chave); // Remove a chave específica
+
+    if (filteredKeys.length === keys.length) {
+        return res.status(404).send('Chave não encontrada.'); // Se não encontrou a chave
+    }
+
+    saveKeys(filteredKeys); // Salva as chaves restantes
+    res.send(`✅ | CHAVE ${chave} DELETADA COM SUCESSO.`);
 });
 
 // Rota para deletar todas as chaves
@@ -70,6 +89,11 @@ function saveKey(key) {
     fs.writeFileSync(keysFilePath, JSON.stringify(keys, null, 2)); // Salva no JSON
 }
 
+// Função para salvar todas as chaves no arquivo JSON
+function saveKeys(keys) {
+    fs.writeFileSync(keysFilePath, JSON.stringify(keys, null, 2)); // Salva no JSON
+}
+
 // Função para recuperar as chaves do arquivo JSON
 function getKeys() {
     if (!fs.existsSync(keysFilePath)) {
@@ -88,3 +112,4 @@ function deleteAllKeys() {
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
 });
+
