@@ -1,47 +1,47 @@
 const AUTH_KEY = "rquA9WPlnVk1f5IcSqe3oZprepkoooEdLeFbiYfowzbvg3kZ9NR6MMzFIskfbb8s";
+const STORAGE_KEY = 'keys_storage';  // Nome da chave usada no LocalStorage
 
-// Carrega as chaves do arquivo keys.json
-async function loadKeys() {
-    const response = await fetch('keys.json');
-    if (!response.ok) {
-        return [];  // Retorna um array vazio se não conseguir carregar
-    }
-    return response.json();
+// Função para carregar as chaves do LocalStorage
+function loadKeys() {
+    const storedKeys = localStorage.getItem(STORAGE_KEY);
+    return storedKeys ? JSON.parse(storedKeys) : [];
 }
 
-// Salva uma chave no arquivo keys.json
-async function saveKey(key) {
-    let keys = await loadKeys();
-    keys.push(key);
-    const updatedKeys = JSON.stringify(keys, null, 2);
-
-    // Aqui estamos simulando a escrita, em um ambiente real precisaria de um backend
-    console.log("Chaves Atualizadas:", updatedKeys);
+// Função para salvar uma chave no LocalStorage
+function saveKey(key) {
+    const keys = loadKeys();  // Carrega as chaves existentes
+    keys.push(key);  // Adiciona a nova chave
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(keys));  // Salva no LocalStorage
 }
 
-// Função que simula o roteamento baseado na URL
+// Função para deletar todas as chaves
+function deleteAllKeys() {
+    localStorage.removeItem(STORAGE_KEY);  // Remove todas as chaves do LocalStorage
+}
+
+// Simulação de roteamento baseado no hash da URL
 window.onload = function () {
     handleRouting();  // Chama a função de roteamento ao carregar a página
     window.onhashchange = handleRouting;  // Atualiza quando o hash muda
 };
 
 // Função que interpreta o hash e redireciona para a "rota" correta
-async function handleRouting() {
+function handleRouting() {
     const hash = window.location.hash;  // Exemplo: #/a/{chave}
     const parts = hash.slice(2).split('/');  // Remove o '#/' e divide as partes
-    const route = parts[0];
-    const chave = parts[1];
-    const key = parts[2];
+    const route = parts[0];  // Obtém a rota (a, v, d)
+    const chave = parts[1];  // Obtém a chave de autorização
+    const keyToDelete = parts[2];  // Obtém a chave a ser deletada, se necessário
 
     switch (route) {
         case 'a':
-            await handleARoute(chave);
+            handleARoute(chave);
             break;
         case 'v':
-            await handleVRoute(chave);
+            handleVRoute(chave);
             break;
         case 'd':
-            await handleDRoute(key);
+            handleDRoute(chave, keyToDelete);
             break;
         default:
             document.getElementById('output').innerHTML = "❌ | Método inválido.";
@@ -50,7 +50,7 @@ async function handleRouting() {
 }
 
 // Rota /a/{chave} - Gera chave criptografada e salva
-async function handleARoute(chave) {
+function handleARoute(chave) {
     if (chave !== AUTH_KEY) {
         document.getElementById('output').innerHTML = "❌ | Chave inválida.";
         return;
@@ -59,39 +59,42 @@ async function handleARoute(chave) {
     const key = generateKey();
     const timestamp = new Date().toLocaleString();
 
-    // Salva a chave no arquivo JSON
-    await saveKey(key);
+    // Salva a chave no LocalStorage
+    saveKey(key);
 
     document.getElementById('output').innerHTML = `✅ | Chave gerada com sucesso: ${key} <${timestamp}>`;
 }
 
 // Rota /v/{chave} - Lista chaves geradas
-async function handleVRoute(chave) {
+function handleVRoute(chave) {
     if (chave !== AUTH_KEY) {
         document.getElementById('output').innerHTML = "❌ | Chave inválida.";
         return;
     }
 
-    const keys = await loadKeys();
+    const storedKeys = loadKeys();  // Carrega as chaves do LocalStorage
 
-    if (keys.length === 0) {
+    if (storedKeys.length === 0) {
         document.getElementById('output').innerHTML = "Nenhuma chave encontrada.";
     } else {
-        document.getElementById('output').innerHTML = keys.join('<br>');  // Exibe as chaves
+        document.getElementById('output').innerHTML = storedKeys.join('<br>');  // Exibe as chaves
     }
 }
 
 // Rota /d/all/{chave} - Deleta todas as chaves
-async function handleDRoute(chave) {
+function handleDRoute(chave, keyToDelete) {
     if (chave !== AUTH_KEY) {
         document.getElementById('output').innerHTML = "❌ | Chave inválida.";
         return;
     }
 
-    // Limpa o arquivo JSON
-    const emptyKeys = JSON.stringify([]);
-    console.log("Chaves deletadas. Novo estado:", emptyKeys);  // Simulação de limpeza
-    document.getElementById('output').innerHTML = "✅ | Todas as chaves foram deletadas com sucesso.";
+    if (keyToDelete === 'all') {
+        // Deleta todas as chaves do LocalStorage
+        deleteAllKeys();
+        document.getElementById('output').innerHTML = "✅ | Todas as chaves foram deletadas com sucesso.";
+    } else {
+        document.getElementById('output').innerHTML = "❌ | Rota inválida para deletar.";
+    }
 }
 
 // Função para gerar uma chave aleatória
@@ -103,6 +106,5 @@ function generateKey() {
     }
     return key;
 }
-
 
 
