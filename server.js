@@ -14,7 +14,7 @@ const keysFilePath = path.join(__dirname, 'keys.json');
 
 // Rota para a raiz
 app.get('/', (req, res) => {
-    res.send('Bem-vindo ao Gerador de Chaves! Use as rotas para gerar e gerenciar chaves.');
+    res.send('Cannot Get /');
 });
 
 // Rota para gerar uma chave
@@ -37,7 +37,8 @@ app.get('/v/:key', (req, res) => {
     }
 
     const keys = getKeys(); // Recupera as chaves do JSON
-    res.json(keys); // Retorna as chaves como JSON
+    const keysList = keys.join('\n'); // Formata as chaves como lista
+    res.send(keysList); // Retorna as chaves como texto simples
 });
 
 // Rota para deletar todas as chaves
@@ -53,7 +54,13 @@ app.delete('/d/all/:key', (req, res) => {
 
 // Função para gerar uma chave aleatória
 function generateKey() {
-    return Math.random().toString(36).substring(2, 15);
+    const length = 64; // Comprimento da chave
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_'; // Conjunto de caracteres permitidos
+    let key = '';
+    for (let i = 0; i < length; i++) {
+        key += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return key;
 }
 
 // Função para salvar uma chave no arquivo JSON
