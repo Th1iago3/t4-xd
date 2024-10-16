@@ -29,11 +29,6 @@ app.get('/a/:key', (req, res) => {
     res.send(`✅ | CHAVE GERADA COM SUCESSO!! ${generatedKey}`);
 });
 
-// Rota para deletar chaves (informa sobre a operação)
-app.get('/d', (req, res) => {
-    res.send('Use DELETE para remover chaves: /d/{key}/{chave} para uma chave específica ou /d/all/{key} para todas as chaves.');
-});
-
 // Rota para listar chaves
 app.get('/v/:key', (req, res) => {
     const key = req.params.key;
@@ -47,33 +42,42 @@ app.get('/v/:key', (req, res) => {
 });
 
 // Rota para deletar uma chave específica
-app.delete('/d/:key/:chave', (req, res) => {
-    const key = req.params.key;
-    const chave = req.params.chave;
-    if (key !== 'rquA9WPlnVk1f5IcSqe3oZprepkoooEdLeFbiYfowzbvg3kZ9NR6MMzFIskfbb8s') {
-        return res.status(403).send('Chave inválida.');
+app.get('/d/:key/:chave', (req, res) => {
+    const { key, chave } = req.params;
+    // Lógica para verificar a chave de autenticação
+    if (key !== "rquA9WPlnVk1f5IcSqe3oZprepkoooEdLeFbiYfowzbvg3kZ9NR6MMzFIskfbb8s") {
+        return res.status(403).send('Chave inválida!');
     }
 
-    const keys = getKeys(); // Recupera as chaves do JSON
-    const filteredKeys = keys.filter(existingKey => existingKey !== chave); // Remove a chave específica
-
-    if (filteredKeys.length === keys.length) {
-        return res.status(404).send('Chave não encontrada.'); // Se não encontrou a chave
-    }
-
-    saveKeys(filteredKeys); // Salva as chaves restantes
-    res.send(`✅ | CHAVE ${chave} DELETADA COM SUCESSO.`);
+    fs.readFile(keysFilePath, (err, data) => {
+        if (err) {
+            return res.status(500).send('Erro ao ler o arquivo de chaves.');
+        }
+        let keys = JSON.parse(data || '[]');
+        keys = keys.filter(k => k !== chave);  // Remove a chave específica
+        fs.writeFile(keysFilePath, JSON.stringify(keys), (err) => {
+            if (err) {
+                return res.status(500).send('Erro ao salvar as chaves.');
+            }
+            res.send(`Chave ${chave} deletada com sucesso!`);
+        });
+    });
 });
 
 // Rota para deletar todas as chaves
-app.delete('/d/all/:key', (req, res) => {
-    const key = req.params.key;
-    if (key !== 'rquA9WPlnVk1f5IcSqe3oZprepkoooEdLeFbiYfowzbvg3kZ9NR6MMzFIskfbb8s') {
-        return res.status(403).send('Chave inválida.');
+app.get('/d/all/:key', (req, res) => {
+    const { key } = req.params;
+    // Lógica para verificar a chave de autenticação
+    if (key !== "rquA9WPlnVk1f5IcSqe3oZprepkoooEdLeFbiYfowzbvg3kZ9NR6MMzFIskfbb8s") {
+        return res.status(403).send('Chave inválida!');
     }
 
-    deleteAllKeys(); // Deleta todas as chaves
-    res.send('✅ | Todas as chaves foram deletadas com sucesso.');
+    fs.writeFile(keysFilePath, JSON.stringify([]), (err) => {  // Escreve um array vazio no arquivo
+        if (err) {
+            return res.status(500).send('Erro ao deletar as chaves.');
+        }
+        res.send('Todas as chaves foram deletadas com sucesso!');
+    });
 });
 
 // Função para gerar uma chave aleatória
