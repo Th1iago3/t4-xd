@@ -1,33 +1,47 @@
-const AUTH_KEY = "rquA9WPlnVk1f5IcSqe3oZprepkoooEdLeFbiYfowzbvg3kZ9NR6MMzFIskfbb8s";
+coconst AUTH_KEY = "rquA9WPlnVk1f5IcSqe3oZprepkoooEdLeFbiYfowzbvg3kZ9NR6MMzFIskfbb8s";
 
-// Função para carregar chaves do JSON
+// Carrega as chaves do arquivo keys.json
 async function loadKeys() {
     const response = await fetch('keys.json');
+    if (!response.ok) {
+        return [];  // Retorna um array vazio se não conseguir carregar
+    }
     return response.json();
 }
 
-// Função para salvar chaves no JSON
+// Salva uma chave no arquivo keys.json
 async function saveKey(key) {
     let keys = await loadKeys();
     keys.push(key);
     const updatedKeys = JSON.stringify(keys, null, 2);
 
-    // Simula a escrita no arquivo JSON (em um ambiente real, isso precisa de um backend)
+    // Aqui estamos simulando a escrita, em um ambiente real precisaria de um backend
     console.log("Chaves Atualizadas:", updatedKeys);
 }
 
-// Simulação de roteamento baseado na entrada do usuário
-function handleRouting() {
-    const chave = document.getElementById('keyInput').value.trim();
-    const route = chave.split('/')[0]; // Exemplo: "a"
-    const key = chave.split('/')[1]; // Exemplo: "chave"
+// Função que simula o roteamento baseado na URL
+window.onload = function () {
+    handleRouting();  // Chama a função de roteamento ao carregar a página
+    window.onhashchange = handleRouting;  // Atualiza quando o hash muda
+};
+
+// Função que interpreta o hash e redireciona para a "rota" correta
+async function handleRouting() {
+    const hash = window.location.hash;  // Exemplo: #/a/{chave}
+    const parts = hash.slice(2).split('/');  // Remove o '#/' e divide as partes
+    const route = parts[0];
+    const chave = parts[1];
+    const key = parts[2];
 
     switch (route) {
         case 'a':
-            handleARoute(key);
+            await handleARoute(chave);
             break;
         case 'v':
-            handleVRoute(key);
+            await handleVRoute(chave);
+            break;
+        case 'd':
+            await handleDRoute(key);
             break;
         default:
             document.getElementById('output').innerHTML = "❌ | Método inválido.";
@@ -45,7 +59,7 @@ async function handleARoute(chave) {
     const key = generateKey();
     const timestamp = new Date().toLocaleString();
 
-    // Salva a chave no JSON
+    // Salva a chave no arquivo JSON
     await saveKey(key);
 
     document.getElementById('output').innerHTML = `✅ | Chave gerada com sucesso: ${key} <${timestamp}>`;
@@ -67,6 +81,19 @@ async function handleVRoute(chave) {
     }
 }
 
+// Rota /d/all/{chave} - Deleta todas as chaves
+async function handleDRoute(chave) {
+    if (chave !== AUTH_KEY) {
+        document.getElementById('output').innerHTML = "❌ | Chave inválida.";
+        return;
+    }
+
+    // Limpa o arquivo JSON
+    const emptyKeys = JSON.stringify([]);
+    console.log("Chaves deletadas. Novo estado:", emptyKeys);  // Simulação de limpeza
+    document.getElementById('output').innerHTML = "✅ | Todas as chaves foram deletadas com sucesso.";
+}
+
 // Função para gerar uma chave aleatória
 function generateKey() {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -77,37 +104,5 @@ function generateKey() {
     return key;
 }
 
-    const key = generateKey();
-    localStorage.setItem(`${key}.txt`, key);  // Simula arquivo .txt
-
-    const txtKeys = Object.keys(localStorage).filter(key => key.endsWith('.txt'));
-
-    document.getElementById('output').innerHTML = txtKeys.map(key => key.replace('.txt', '')).join('<br>');  // Lista sem a extensão
-}
-
-// Rota /d/{key}/{chave} - Deleta chave
-function handleDRoute(key, chave) {
-    if (chave !== AUTH_KEY) {
-        document.getElementById('output').innerHTML = "❌ | Invalid KeyChain[1]";
-        return;
-    }
-
-    if (localStorage.getItem(key) !== null) {
-        localStorage.removeItem(key);
-        document.getElementById('output').innerHTML = `✅ | CHAVE ${key} DELETADA COM SUCESSO`;
-    } else {
-        document.getElementById('output').innerHTML = "❌ | Not Found KeyChain[1]";
-    }
-}
-
-// Função para gerar uma chave aleatória (com letras maiúsculas e números)
-function generateKey() {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let key = '';
-    for (let i = 0; i < 64; i++) {  // Gera uma chave de 64 caracteres
-        key += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return key;
-}
 
 
