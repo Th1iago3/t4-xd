@@ -14,7 +14,7 @@ const keysFilePath = path.join(__dirname, 'keys.json');
 
 // Rota para a raiz
 app.get('/', (req, res) => {
-    res.send('Bem-vindo ao Gerador de Chaves! Use as rotas para gerar e gerenciar chaves.');
+    res.send('Cannot Get /');
 });
 
 // Rota para gerar uma chave
