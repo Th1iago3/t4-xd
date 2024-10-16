@@ -29,7 +29,7 @@ function handleRouting() {
             handleDRoute(key, fullChave);
             break;
         default:
-            document.getElementById('output').innerHTML = "❌ | Invalid Method[0]";
+            document.getElementById('output').innerHTML = "❌ | Invalid Method[1]";
             break;
     }
 }
