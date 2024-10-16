@@ -29,7 +29,7 @@ function handleRouting() {
             handleDRoute(key, fullChave);
             break;
         default:
-            document.getElementById('output').innerHTML = "❌ | Rota!";
+            document.getElementById('output').innerHTML = "❌ | Invalid Method[0]";
             break;
     }
 }
@@ -37,7 +37,7 @@ function handleRouting() {
 // Rota /a/{chave} - Gera chave criptografada e salva
 function handleARoute(chave) {
     if (chave !== AUTH_KEY) {
-        document.getElementById('output').innerHTML = "❌ | Chave inválida!";
+        document.getElementById('output').innerHTML = "❌ | Invalid KeyChain[1]";
         return;
     }
 
@@ -53,7 +53,7 @@ function handleARoute(chave) {
 // Rota /v/{chave} - Lista chaves geradas
 function handleVRoute(chave) {
     if (chave !== AUTH_KEY) {
-        document.getElementById('output').innerHTML = "❌ | Chave inválida!";
+        document.getElementById('output').innerHTML = "❌ | Invalid KeyChain[1]";
         return;
     }
 
@@ -69,7 +69,7 @@ function handleVRoute(chave) {
 // Rota /tm/{chave} - Gera chaves em .txt e lista chaves
 function handleTMRoute(chave) {
     if (chave !== AUTH_KEY) {
-        document.getElementById('output').innerHTML = "❌ | Chave inválida!";
+        document.getElementById('output').innerHTML = "❌ | Invalid KeyChain[1]";
         return;
     }
 
@@ -84,7 +84,7 @@ function handleTMRoute(chave) {
 // Rota /d/{key}/{chave} - Deleta chave
 function handleDRoute(key, chave) {
     if (chave !== AUTH_KEY) {
-        document.getElementById('output').innerHTML = "❌ | Chave inválida!";
+        document.getElementById('output').innerHTML = "❌ | Invalid KeyChain[1]";
         return;
     }
 
@@ -92,7 +92,7 @@ function handleDRoute(key, chave) {
         localStorage.removeItem(key);
         document.getElementById('output').innerHTML = `✅ | CHAVE ${key} DELETADA COM SUCESSO`;
     } else {
-        document.getElementById('output').innerHTML = "❌ | Chave não encontrada";
+        document.getElementById('output').innerHTML = "❌ | Not Found KeyChain[1]";
     }
 }
 
