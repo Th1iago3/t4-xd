@@ -96,8 +96,14 @@ function handleDRoute(key, chave) {
     }
 }
 
-// Função para gerar uma chave aleatória
+// Função para gerar uma chave aleatória (com letras maiúsculas e números)
 function generateKey() {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let key = '';
+    for (let i = 0; i < 64; i++) {  // Gera uma chave de 64 caracteres
+        key += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return key;
 }
+
 
