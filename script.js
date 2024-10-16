@@ -1,50 +1,14 @@
-// Configuração do Firebase (use os dados gerados para o seu projeto)
-const firebaseConfig = {
-    apiKey: "AIzaSyBPidWKOtA9hfa83A9b11WJBm27NPBTsSo",
-    authDomain: "t4-cxd.firebaseapp.com",
-    databaseURL: "https://t4-cxd-default-rtdb.firebaseio.com",
-    projectId: "t4-cxd",
-    storageBucket: "t4-cxd.appspot.com",
-    messagingSenderId: "527743510667",
-    appId: "1:527743510667:web:b6a750fe315a424ed48c8e"
-};
-
-// Inicializa o Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-
 const AUTH_KEY = "rquA9WPlnVk1f5IcSqe3oZprepkoooEdLeFbiYfowzbvg3kZ9NR6MMzFIskfbb8s";
 
-// Função para gerar uma chave aleatória
-function generateKey() {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-}
-
-// Função para salvar uma chave no Firebase
-function saveKeyToFirebase(key) {
-    firebase.database().ref('keys/' + key).set({
-        key: key,
-        timestamp: new Date().toISOString()
-    });
-}
-
-// Função para listar as chaves do Firebase
-function listKeysFromFirebase() {
-    firebase.database().ref('keys').once('value', function(snapshot) {
-        const keys = snapshot.val();
-        let output = '';
-        for (let key in keys) {
-            output += `${keys[key].key}<br>`;
-        }
-        document.getElementById('output').innerHTML = output || 'Nenhuma chave encontrada.';
-    });
-}
-
-// Função para deletar todas as chaves do Firebase
-function deleteAllKeysFromFirebase() {
-    firebase.database().ref('keys').remove().then(() => {
-        document.getElementById('output').innerHTML = '✅ | Todas as chaves foram deletadas.';
-    });
+// Função para fazer requisições ao PHP
+function makeRequest(url, method = 'GET', data = null) {
+    return fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: data ? JSON.stringify(data) : null
+    }).then(response => response.json());
 }
 
 // Simulação de roteamento baseado no hash da URL
@@ -59,8 +23,7 @@ function handleRouting() {
     const parts = hash.slice(2).split('/');  // Remove o '#/' e divide as partes
     const route = parts[0];
     const chave = parts[1];
-    const key = parts[1];
-    const fullChave = parts[2];
+    const key = parts[2];
 
     if (chave !== AUTH_KEY) {
         document.getElementById('output').innerHTML = "❌ | Invalid KeyChain[1]";
@@ -69,16 +32,14 @@ function handleRouting() {
 
     switch (route) {
         case 'a':
-            const newKey = generateKey();
-            saveKeyToFirebase(newKey);
-            document.getElementById('output').innerHTML = `✅ | CHAVE GERADA COM SUCESSO!! ${newKey}`;
+            generateAndSaveKey();
             break;
         case 'v':
-            listKeysFromFirebase();
+            listKeys();
             break;
         case 'd':
             if (key === 'all') {
-                deleteAllKeysFromFirebase();
+                deleteAllKeys();
             }
             break;
         default:
@@ -86,4 +47,39 @@ function handleRouting() {
             break;
     }
 }
+
+// Função para gerar uma chave aleatória e salvar via PHP
+function generateAndSaveKey() {
+    const newKey = generateKey();
+    makeRequest('backend.php', 'POST', { action: 'save', key: newKey })
+        .then(response => {
+            document.getElementById('output').innerHTML = `✅ | CHAVE GERADA COM SUCESSO!! ${newKey}`;
+        });
+}
+
+// Função para listar as chaves via PHP
+function listKeys() {
+    makeRequest('backend.php?action=list')
+        .then(response => {
+            if (response.keys.length > 0) {
+                document.getElementById('output').innerHTML = response.keys.join('<br>');
+            } else {
+                document.getElementById('output').innerHTML = 'Nenhuma chave encontrada.';
+            }
+        });
+}
+
+// Função para deletar todas as chaves via PHP
+function deleteAllKeys() {
+    makeRequest('backend.php', 'POST', { action: 'delete' })
+        .then(response => {
+            document.getElementById('output').innerHTML = '✅ | Todas as chaves foram deletadas.';
+        });
+}
+
+// Função para gerar uma chave aleatória
+function generateKey() {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
 
